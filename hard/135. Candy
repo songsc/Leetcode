@@ -44,6 +44,7 @@ func candy(ratings []int) int {
             } else if ratings[i] == ratings[i + 1] {
                 candies[i] = 1
             } else {
+                // Local maximas need to be calculated twice since either side can be the longest increasing sequence from local minima.
                 candies[i + 1] = int(math.Max(float64(candies[i + 1]), float64(candies[i] + 1)))
                 break
             }
