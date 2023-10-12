@@ -1,0 +1,139 @@
+/**
+ * Not an easy question! Many nontrivial corner cases and requires special data structures :/
+ * Convert the tickets array to map from origin to a list of destinations stored in deque.
+ * Why a deque is required isn't trivial at this point, but will be found out painfully later on.
+ * DFS, starts at JFK. When a destination is visited, pop it from the deque.
+ * At the end of DFS, if a city has unvisited destination(s), then we need to rollback to this city and try another destination.
+ * Note that this needs to be done recursively as more than one city may have unvisited destinations!
+ * This is why a deque is required. Since we need to visit a different city on another try, this city needs to be at the end of the deeue so it won't be visited again unless we have tried all the other options.
+ * Block a few hours, enjoy... or not.
+ */
+
+type List struct {
+    Start *Node
+    End *Node
+}
+
+type Node struct {
+    Dest string
+    Next *Node
+}
+
+func (l *List) InsertAtFront(new *Node) {
+    if l.Start == nil {
+        l.Start = new
+        l.End = new
+    } else {
+        new.Next = l.Start
+        l.Start = new
+    }
+}
+
+func (l *List) InsertAtEnd(new *Node) {
+    if l.Start == nil {
+        l.Start = new
+        l.End = new
+    } else {
+        l.End.Next = new
+        l.End = new
+    }
+}
+
+func (l *List) PopFirst() *Node {
+    if l.Start == nil {
+        return nil
+    }
+
+    first := l.Start
+    l.Start = l.Start.Next
+
+    return first
+}
+
+func findItinerary(tickets [][]string) []string {
+    tickets = sortTickets(tickets)
+    ticketsMap := convertToMap(tickets)
+
+    itineary := make([]string, len(tickets) + 1)
+    itineary[0] = "JFK"
+    dfs("JFK", ticketsMap, &itineary, 1)
+
+    return itineary
+}
+
+func sortTickets(tickets [][]string) [][]string{
+    sort.Slice(tickets, func(i, j int) bool {
+        if tickets[i][0] == tickets[j][0] {
+            return strings.Compare(tickets[i][1], tickets[j][1]) < 0
+        } else {
+            return strings.Compare(tickets[i][0], tickets[j][0]) < 0
+        }        
+    })
+
+    return tickets
+}
+
+func convertToMap(tickets [][]string) map[string]*List {
+    ticketsMap := map[string]*List{}
+
+    for _, ticket := range tickets {
+        if ticketsMap[ticket[0]] == nil {
+            ticketsMap[ticket[0]] = &List{}
+        }
+
+        ticketsMap[ticket[0]].InsertAtEnd(&Node{
+            Dest: ticket[1],
+        })
+    }
+
+    return ticketsMap
+}
+
+func dfs(origin string, ticketsMap map[string]*List, itineary *[]string, idx int) bool {
+    destsList := ticketsMap[origin]
+    if destsList == nil || destsList.Start == nil{
+        return true
+    }
+
+    for dest := destsList.PopFirst(); dest != nil; dest = destsList.PopFirst() {
+        (*itineary)[idx] = dest.Dest
+        valid := dfs(dest.Dest, ticketsMap, itineary, idx + 1)
+
+        rollback := destsList.Start != nil || !valid
+        if rollback {
+            rollbackHelper(ticketsMap, itineary, idx)
+            dest.Next = nil
+            destsList.InsertAtEnd(dest)
+        } 
+
+        if valid && !rollback {
+            return true
+        }
+    }
+
+    return false
+}
+
+func rollbackHelper(ticketsMap map[string]*List, itineary *[]string, idx int) {
+    for i := len(*itineary) - 1; i > idx ; i-- {
+        if (*itineary)[i] == "" {
+            continue
+        }
+        ticketsMap[(*itineary)[i - 1]].InsertAtFront(&Node{Dest: (*itineary)[i]})
+        (*itineary)[i] = ""
+    }
+}
+
+// func (l *List) Print() {
+//     for n := l.Start; n != nil; n = n.Next {
+//         fmt.Print(n.Dest, ", ")
+//     }
+//     fmt.Println()
+// }
+
+// func PrintMap(m map[string]*List) {
+//     for k, v := range m {
+//         fmt.Print(k, ": ")
+//         v.Print()
+//     }
+// }
