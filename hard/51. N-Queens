@@ -1,0 +1,74 @@
+/**
+ * Tedious, but not difficult.
+ */
+
+func solveNQueens(n int) [][]string {
+    board := make([][]string, n)
+    for i := range board {
+        board[i] = make([]string, n)
+        for j := range board[i] {
+            board[i][j] = "."
+        }
+    }
+
+    solutions := [][]string{}
+
+    helper(board, n, 0, 0, 0, &solutions)
+
+    return solutions
+}
+
+func helper(board [][]string, size int, numOfQ int, m, n int, solutions *[][]string) {
+    if numOfQ == size {
+        solution := make([]string, size)
+        for i := range board {
+            solution[i] = strings.Join(board[i][:], "")
+        }
+        *solutions = append(*solutions, solution)
+        return
+    }
+
+    for i := m; i < size; i++ {
+        for j := n; j < size; j++ {
+            if check(board, i, j) {
+                board[i][j] = "Q"
+                helper(board, size, numOfQ+1, i+1, 0, solutions)    
+                board[i][j] = "."
+            }
+        }
+    }   
+}
+
+func check(board [][]string, i, j int) bool {
+    for a := 0; a < len(board); a++ {
+        if board[a][j] == "Q" {
+            return false
+        }
+        if board[i][a] == "Q" {
+            return false
+        }
+
+        if i - a >= 0 && j - a >= 0 {
+            if board[i-a][j-a] == "Q" {
+                return false
+            }
+        }
+        if i + a < len(board) && j + a < len(board[0]) {
+            if board[i+a][j+a] == "Q" {
+                return false
+            }
+        }
+        if i - a >= 0 && j + a < len(board[0]) {
+            if board[i-a][j+a] == "Q" {
+                return false
+            }
+        }
+        if i + a < len(board) && j - a >=0 {
+            if board[i+a][j-a] == "Q" {
+                return false
+            }
+        }
+    }
+
+    return true
+}
