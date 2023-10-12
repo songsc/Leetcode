@@ -1,0 +1,92 @@
+/**
+ * Easy with Deque
+ */
+
+type Element struct {
+    Val int
+    Idx int
+    Next *Element
+    Prev *Element
+}
+
+type Deque struct {
+    Start *Element
+    End *Element
+}
+
+func (d *Deque) Enqueue(new *Element) {
+    new.Next = d.Start
+    new.Prev = nil
+    if d.Start != nil {
+        d.Start.Prev = new
+    }
+    d.Start = new
+}
+
+func (d *Deque) Dequeue() *Element {
+    if d.Start == nil {
+        return nil
+    }
+    if d.Start.Next == nil {
+        start := d.Start
+        d.Start = nil
+        d.End = nil
+        return start 
+    } else {
+        start := d.Start
+        d.Start.Next.Prev = nil
+        d.Start = d.Start.Next
+        return start
+    }
+}
+
+func (d *Deque) Push(new *Element) {
+    new.Prev = d.End
+    new.Next = nil
+    if d.Start == nil {
+        d.Start = new
+    }
+    if d.End != nil {
+        d.End.Next = new
+    }
+    d.End = new
+}
+
+func (d *Deque) Pop() *Element {
+    if d.End == nil {
+        return nil
+    } 
+    if d.End.Prev == nil {
+        end := d.End
+        d.Start = nil
+        d.End = nil
+        return end
+    } else {
+        end := d.End
+        d.End.Prev.Next = nil
+        d.End = d.End.Prev
+        return end
+    } 
+}
+
+func maxSlidingWindow(nums []int, k int) []int {
+    solution := make([]int, len(nums) - k + 1)
+    d := Deque{}
+
+    for i := 0; i < len(nums); i++ {
+        if d.Start != nil && d.Start.Idx < i + 1 - k {
+            _ = d.Dequeue()
+        }
+
+        for ;d.End != nil && nums[i] > d.End.Val; {
+            _ = d.Pop()
+        } 
+        d.Push(&Element{Val: nums[i], Idx: i})
+
+        if i + 1 >= k {
+            solution[i + 1 - k] = d.Start.Val
+        }
+    }
+
+    return solution
+}
