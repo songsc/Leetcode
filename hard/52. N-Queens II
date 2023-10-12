@@ -1,0 +1,73 @@
+/**
+ * Tedious, but not difficult.
+ */
+ 
+func totalNQueens(n int) int {
+    board := make([][]string, n)
+    for i := range board {
+        board[i] = make([]string, n)
+        for j := range board[i] {
+            board[i][j] = "."
+        }
+    }
+
+    numOfSolutions := 0
+
+    helper(board, n, 0, 0, &numOfSolutions)
+
+    return numOfSolutions
+}
+
+func helper(board [][]string, size int, numOfQ int, m int, numOfSolutions *int) {
+    if numOfQ == size {
+        *numOfSolutions++
+        return
+    }
+
+    for i := m; i < size; i++ {
+        if i > numOfQ {
+            return
+        }
+        for j := 0; j < size; j++ {
+            if check(board, i, j) {
+                board[i][j] = "Q"
+                helper(board, size, numOfQ+1, i+1, numOfSolutions)    
+                board[i][j] = "."
+            }
+        }
+    }   
+}
+
+func check(board [][]string, i, j int) bool {
+    for a := 0; a < len(board); a++ {
+        if board[a][j] == "Q" {
+            return false
+        }
+        if board[i][a] == "Q" {
+            return false
+        }
+
+        if i - a >= 0 && j - a >= 0 {
+            if board[i-a][j-a] == "Q" {
+                return false
+            }
+        }
+        if i + a < len(board) && j + a < len(board[0]) {
+            if board[i+a][j+a] == "Q" {
+                return false
+            }
+        }
+        if i - a >= 0 && j + a < len(board[0]) {
+            if board[i-a][j+a] == "Q" {
+                return false
+            }
+        }
+        if i + a < len(board) && j - a >=0 {
+            if board[i+a][j-a] == "Q" {
+                return false
+            }
+        }
+    }
+
+    return true
+}
