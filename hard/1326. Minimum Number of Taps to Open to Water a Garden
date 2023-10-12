@@ -1,0 +1,79 @@
+/**
+ * Can be divided into two easier problems.
+ * Convert the ranges array from radius of each tap to left and right limit of each tap.
+ * Sort the taps based on the left limit and right limit.
+ * A tap can be ignored if its left to right range is covered by another tap.
+ * Start from 0, use greedy algorithm to go as right as possile, repeat until right end is reached.
+ */
+
+type Interval struct {
+    Left  int
+    Right int
+}
+
+func minTaps(n int, ranges []int) int {
+    intervals := createIntervals(n, ranges)
+
+    if len(intervals) == 0 {
+        return -1 
+    } 
+
+    current := intervals[0]
+    rightMost := current.Right
+    taps := 1
+
+    if current.Left == 0 {
+        for i := 1; i < len(intervals); i++ {
+            if intervals[i].Left > rightMost {
+                return -1
+            }
+            
+            newRightMost := rightMost
+            j := i
+            for ; j < len(intervals) && intervals[j].Left <= rightMost; j++ {
+                if intervals[j].Right > newRightMost {
+                    newRightMost = intervals[j].Right
+                }
+            }
+
+            rightMost = newRightMost
+            taps++
+            i = j - 1
+        }
+    } else {
+        return -1
+    }
+
+    if rightMost == n {
+        return taps
+    } else {
+        return -1
+    }
+
+}
+
+func createIntervals(n int, ranges []int) []Interval {
+    intervals := make([]Interval, n + 1)
+    for i, r := range ranges {
+        intervals[i] = Interval{
+            Left: int(math.Max(0, float64(i - r))),
+            Right: int(math.Min(float64(n), float64(i + r))),
+        }
+    }
+
+    sort.Slice(intervals, func(i, j int) bool {
+        return (intervals[i].Left == intervals[j].Left && intervals[i].Right > intervals[j].Right) ||
+        (intervals[i].Left < intervals[j].Left)
+    })
+
+    currentInterval := intervals[0]
+    filteredIntervals := []Interval{currentInterval}
+    for _, interval := range intervals {
+        if interval.Right > currentInterval.Right && interval.Right != interval.Left {
+            filteredIntervals = append(filteredIntervals, interval)
+            currentInterval = interval
+        } 
+    }
+
+    return filteredIntervals
+}
