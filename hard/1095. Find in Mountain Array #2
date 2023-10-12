@@ -1,0 +1,77 @@
+/**
+ * Second solution. Use loops instead of recrusion for binary search.
+ */
+
+/**
+ * // This is the MountainArray's API interface.
+ * // You should not implement it, or speculate about its implementation
+ * type MountainArray struct {
+ * }
+ *
+ * func (this *MountainArray) get(index int) int {}
+ * func (this *MountainArray) length() int {}
+ */
+
+func findInMountainArray(target int, mountainArr *MountainArray) int {
+    // Find peak
+    n := mountainArr.length() 
+    i, j, k := 1, (n - 1) / 2, n - 1 - 1
+    for ; i <= k; j = (i + k) / 2 {
+        prev := mountainArr.get(j - 1)
+        mid := mountainArr.get(j)
+        next := mountainArr.get(j + 1)
+
+        if prev < mid && mid > next {
+            break
+        }
+        if prev < mid && mid < next {
+            i = j + 1
+        } 
+        if prev > mid && mid > next {
+            k = j - 1
+        }
+    }
+    peak := j
+
+    ans := -1
+    // Search in ascending array
+    i, j, k = 0, peak / 2, peak
+    for ; i <= k; j = (i + k) / 2 {
+        mid := mountainArr.get(j)
+        if mid == target {
+            ans = j
+            break
+        }
+        if mid < target {
+            i = j + 1
+        }
+        if mid > target {
+            k = j - 1
+        }
+    }
+    if ans >= 0 {
+        return ans
+    }
+
+    // Search in descending array
+    i, j, k = peak, (peak + n - 1) / 2, n - 1
+    for ; i <= k; j = (i + k) / 2 {
+        mid := mountainArr.get(j)
+        if mid == target {
+            ans = j
+            break
+        }
+        if mid < target {
+            k = j - 1
+        }
+        if mid > target {
+            i = j + 1
+        }
+    }
+    if ans >= 0 {
+        return ans
+    }
+
+    return -1
+}
+
