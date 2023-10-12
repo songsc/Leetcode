@@ -1,0 +1,59 @@
+/**
+ * Find local minimas.
+ * Assign 1 candy to kids whose rating is local minima.
+ * Give one more candy to the next kid when climbing from local minima to local maxima.
+ * "Plateaus" and local maximas are corner cases.
+ */
+
+func candy(ratings []int) int {
+    n := len(ratings)
+    candies := make([]int, n)
+    localMinimas := []int{}
+
+    for i := range ratings {
+        if i > 0 && ratings[i] > ratings[i - 1] {
+            continue
+        }
+        if i < n - 1 && ratings[i] > ratings[i + 1] {
+            continue
+        }
+
+        // If rating is the same, consider it as a local minima.
+        // The question does not say children with the same rating as their neighbours get the same number of candies.
+        // Sorry, kid!
+        localMinimas = append(localMinimas, i)
+    }
+
+    for _, localMinima := range localMinimas {
+        candies[localMinima] = 1
+        
+        for i := localMinima + 1; i < n; i++ {
+            if ratings[i] > ratings[i - 1] {
+                candies[i] = candies[i - 1] + 1
+            } else if ratings[i] == ratings[i - 1] {
+                candies[i] = 1
+            } else {
+                candies[i - 1] = int(math.Max(float64(candies[i - 1]), float64(candies[i] + 1)))
+                break
+            }
+        }
+
+        for i := localMinima - 1; i >= 0; i-- {
+            if ratings[i] > ratings[i + 1] {
+                candies[i] = candies[i + 1] + 1
+            } else if ratings[i] == ratings[i + 1] {
+                candies[i] = 1
+            } else {
+                candies[i + 1] = int(math.Max(float64(candies[i + 1]), float64(candies[i] + 1)))
+                break
+            }
+        }
+    }
+
+    sum := 0
+    for i := range candies {
+        sum += candies[i]
+    }
+
+    return sum
+}
