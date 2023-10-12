@@ -1,0 +1,75 @@
+/**
+  * Not a very hard problem. 
+  * Need to implement 3 types of binary search.
+  * Find peak, search in ascending array, and search in descending array.
+  */
+
+/**
+ * // This is the MountainArray's API interface.
+ * // You should not implement it, or speculate about its implementation
+ * type MountainArray struct {
+ * }
+ *
+ * func (this *MountainArray) get(index int) int {}
+ * func (this *MountainArray) length() int {}
+ */
+
+func findInMountainArray(target int, mountainArr *MountainArray) int {
+    n := mountainArr.length()
+    peak := findPeak(mountainArr, 1, n - 1 - 1, n)
+    
+    if idx := findTarget(target, mountainArr, 0, peak, true); idx >= 0 {
+        return idx
+    }
+    if idx := findTarget(target, mountainArr, peak, n - 1, false); idx >= 0 {
+        return idx
+    }
+    return -1
+}
+
+func findPeak(arr *MountainArray, i, k, n int) int {
+    if i > k {
+        return -1
+    }
+
+    j := (i + k) / 2 
+    prev := arr.get(j - 1)
+    mid := arr.get(j)
+    next := arr.get(j + 1)
+
+    if prev < mid && mid < next {
+        return findPeak(arr, j + 1, k, n)
+    } 
+    if prev > mid && mid > next {
+        return findPeak(arr, i, j - 1, n)
+    }
+    return j
+}
+
+func findTarget(target int, arr *MountainArray, i, k int, increase bool) int {
+    if i > k {
+        return -1
+    }
+
+    j := (i + k) / 2
+    mid := arr.get(j)
+
+    if increase {
+        if mid < target {
+            return findTarget(target, arr, j + 1, k, increase)
+        }
+        if mid > target {
+            return findTarget(target, arr, i, j - 1, increase)
+        }
+        return j
+    } else {
+        if mid < target {
+            return findTarget(target, arr, i, j - 1, increase)
+        }
+        if mid > target {
+            return findTarget(target, arr, j + 1, k, increase)
+        }
+        return j
+    }
+}
+
