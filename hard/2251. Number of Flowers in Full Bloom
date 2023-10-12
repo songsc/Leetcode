@@ -1,0 +1,56 @@
+/**
+ * Not a very hard problem. 
+ * Sort start and end date of flowers.
+ * Then use binary search to find out the number of flowers which has started blooming,
+ * and the number of flowers which has ended blooming.
+ */
+
+func fullBloomFlowers(flowers [][]int, people []int) []int {
+    start := make([]int, len(flowers))
+    end := make([]int, len(flowers))
+    for i, flower := range flowers {
+        start[i] = flower[0]
+        end[i] = flower[1]
+    }
+    sort.Ints(start)
+    sort.Ints(end)
+
+    ans := make([]int, len(people))
+    for i := range people {
+        numStart := helper(start, people[i])
+        numEnd := helper(end, people[i] - 1) // Note the -1 here. Flower stops blooming AFTER the end date.
+        ans[i] = numStart - numEnd
+    }
+
+    return ans
+}
+
+func helper(arr []int, target int) int {
+    i, j := 0, len(arr) - 1
+    for ;; {
+        mid := (i + j) / 2
+
+        if arr[i] > target {
+            return i
+        }
+        if arr[j] < target {
+            return j + 1
+        }
+        if arr[mid] == target {
+            if mid == j {
+                return mid + 1
+            }
+
+            i++
+        }
+
+        if arr[mid] < target {
+            i = mid + 1
+        }
+        if arr[mid] > target {
+            j = mid - 1
+        }
+    }
+
+    return -1
+}
